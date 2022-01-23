@@ -31,7 +31,7 @@ public class MemberService implements UserDetailsService{
 	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
-	public Member processNewAccount(SignUpForm signUpForm) {
+	public Member processNewMember(SignUpForm signUpForm) {
 		Member newMember = saveNewMember(signUpForm);
 		newMember.generateEmailCheckToken();
 		sendSignUpConfirmEmail(newMember);

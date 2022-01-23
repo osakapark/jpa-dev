@@ -12,6 +12,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.yaml.snakeyaml.tokens.WhitespaceToken;
 
@@ -44,7 +45,7 @@ public class MemberController {
 			return "member/sign-up";
 		}
 
-		Member member = memberService.processNewAccount(signUpForm);
+		Member member = memberService.processNewMember(signUpForm);
 		memberService.login(member);
 		return "redirect:/";
 	}
@@ -89,4 +90,15 @@ public class MemberController {
 		return "redirect:/";
 	}
 
+	@GetMapping("/profile/{nickname}")
+	public String viewProfile(@PathVariable String nickname, Model model, @CurrentUser Member member) {
+		Member byNickName = memberRepository.findByNickname(nickname);
+		if(byNickName == null ) {
+			throw new IllegalArgumentException(nickname +" 에 해당하는 사용자가 없습니다.");
+		}
+		
+		model.addAttribute(byNickName);
+		model.addAttribute("isOwner", byNickName.equals(member));
+		return "member/profile";		
+	}
 }

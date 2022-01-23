@@ -51,7 +51,7 @@ public class Member {
 
 	@Lob
 	@Basic(fetch = FetchType.EAGER)
-	private String pfofileImage;
+	private String profileImage;
 
 	private boolean createdByEmail;
 
