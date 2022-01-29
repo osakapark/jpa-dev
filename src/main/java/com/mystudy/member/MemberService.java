@@ -6,6 +6,7 @@ import javax.validation.Valid;
 
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.aspectj.weaver.NewConstructorTypeMunger;
+
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,18 +20,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mystudy.domain.Member;
-
+import com.mystudy.settings.Profile;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class MemberService implements UserDetailsService{
 	private final MemberRepository memberRepository;
 	private final JavaMailSender javaMailSender;
 	private final PasswordEncoder passwordEncoder;
 
-	@Transactional
+	
 	public Member processNewMember(SignUpForm signUpForm) {
 		Member newMember = saveNewMember(signUpForm);
 		newMember.generateEmailCheckToken();
@@ -69,6 +71,7 @@ public class MemberService implements UserDetailsService{
 		SecurityContextHolder.getContext().setAuthentication(token);				
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public UserDetails loadUserByUsername(String emailOrNickname) throws UsernameNotFoundException {
 		Member member = memberRepository.findByEmail(emailOrNickname);
@@ -82,5 +85,18 @@ public class MemberService implements UserDetailsService{
 
 		return new UserMember(member);
 	}
+	
+	public void completeSignUp(Member member) {
+		member.completeSignUp();
+		login(member);
+	}
 
+	public void updateProfile(Member member, Profile profile) {
+		member.setUrl(profile.getUrl());
+		member.setOccupation(profile.getOccupation());
+		member.setLocation(profile.getLocation());
+		member.setBio(profile.getBio());
+		
+		memberRepository.save(member);
+	}
 }

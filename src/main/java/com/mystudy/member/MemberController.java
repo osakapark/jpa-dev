@@ -64,8 +64,7 @@ public class MemberController {
 			return view;
 		}		
 		
-		member.completeSignUp();
-		memberService.login(member);
+		memberService.completeSignUp(member);		
 		model.addAttribute("numberOfUser", memberRepository.count());
 		model.addAttribute("nickname", member.getNickname());
 		return view;
