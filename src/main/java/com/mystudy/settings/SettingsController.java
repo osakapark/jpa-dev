@@ -1,7 +1,11 @@
 package com.mystudy.settings;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.validation.Valid;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -9,16 +13,22 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.mystudy.domain.Member;
+import com.mystudy.domain.Tag;
 import com.mystudy.member.CurrentUser;
 import com.mystudy.member.MemberService;
 import com.mystudy.settings.form.NicknameForm;
 import com.mystudy.settings.form.Notifications;
 import com.mystudy.settings.form.PasswordForm;
 import com.mystudy.settings.form.Profile;
+import com.mystudy.settings.form.TagForm;
 import com.mystudy.settings.validator.NicknameValidator;
 import com.mystudy.settings.validator.PasswordFormValidator;
+import com.mystudy.tag.TagRepository;
+
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -33,10 +43,14 @@ public class SettingsController {
 	static final String SETTINGS_NOTIFICATIONS_URL = "/" + SETTINGS_NOTIFICATIONS_VIEW_NAME;
 	static final String SETTINGS_MEMBER_VIEW_NAME = "settings/member";
 	static final String SETTINGS_MEMBER_URL = "/" + SETTINGS_MEMBER_VIEW_NAME;
+	static final String SETTINGS_TAGS_VIEW_NAME = "settings/tags";
+	static final String SETTINGS_TAGS_URL = "/" + SETTINGS_TAGS_VIEW_NAME;
+	
 
 	private final MemberService memberService;
 	private final ModelMapper modelMapper;
 	private final NicknameValidator nicknameValidator;
+	private final TagRepository tagrepository;
 
 	@InitBinder("passwordForm")
 	public void passwordForminitBinder(WebDataBinder webDataBinder) {
@@ -108,6 +122,32 @@ public class SettingsController {
 		return "redirect:" + SETTINGS_NOTIFICATIONS_URL;
 	}
 
+	@GetMapping(SETTINGS_TAGS_URL)
+	public String updateTags(@CurrentUser Member member, Model model) {
+		model.addAttribute(member);
+		Set<Tag> tags = memberService.getTags(member);
+		model.addAttribute("tags", tags.stream().map(Tag::getTitle).collect(Collectors.toList()));	
+		System.out.println("tags :" +tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
+		return SETTINGS_TAGS_VIEW_NAME;
+	}
+	
+	
+	@SuppressWarnings("rawtypes")
+	@PostMapping("/settings/tags/add")
+	@ResponseBody
+	public ResponseEntity addTag(@CurrentUser Member member, @RequestBody TagForm tagForm) {
+		String title = tagForm.getTagTitle();
+		
+		Tag tag = tagrepository.findByTitle(title);
+		if(tag == null ) {
+			tag = tagrepository.save(Tag.builder().title(tagForm.getTagTitle()).build());
+		}
+		memberService.addTag(member, tag);
+		return ResponseEntity.ok().build();
+	}
+	
+	
+	
 	@GetMapping(SETTINGS_MEMBER_URL)
 	public String updateMemberForm(@CurrentUser Member member, Model model) {
 		model.addAttribute(member);

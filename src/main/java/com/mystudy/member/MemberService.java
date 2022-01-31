@@ -1,6 +1,9 @@
 package com.mystudy.member;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import javax.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
@@ -15,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.mystudy.domain.Member;
+import com.mystudy.domain.Tag;
 import com.mystudy.member.form.SignUpForm;
 import com.mystudy.settings.form.Notifications;
 import com.mystudy.settings.form.Profile;
@@ -113,5 +117,15 @@ public class MemberService implements UserDetailsService {
 		mailMessage.setSubject("스터디갈래, 로그인 링크");
 		mailMessage.setText("/login-by-email?token=" + member.getEmailCheckToken() + "&email=" + member.getEmail());
 		javaMailSender.send(mailMessage);
+	}
+
+	public void addTag(Member member, Tag tag) {
+		Optional<Member> byId = memberRepository.findById(member.getId());
+		byId.ifPresent(a -> a.getTags().add(tag));
+	}
+
+	public Set<Tag> getTags(Member member) {
+		Optional<Member> byId = memberRepository.findById(member.getId());
+		return byId.orElseThrow().getTags();
 	}
 }

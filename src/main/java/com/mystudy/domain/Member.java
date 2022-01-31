@@ -1,6 +1,7 @@
 package com.mystudy.domain;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Basic;
@@ -10,6 +11,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
+
+import org.hibernate.annotations.ManyToAny;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -67,7 +71,9 @@ public class Member {
     @Builder.Default()
     private boolean studyUpdatedByWeb = true;	
 		 
-
+    @ManyToMany
+    private Set<Tag> tags;
+    
 	public void generateEmailCheckToken() {
 		this.emailCheckToken = UUID.randomUUID().toString();
 		this.emailCheckTokenGeneratedDttm = LocalDateTime.now();

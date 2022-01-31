@@ -9,4 +9,23 @@ spring:
   freemarker:
     cache: false
   thymeleaf:
-    cache: false    
+    cache: false
+
+  # 개발할 때에만 create-drop 또는 update를 사용하고 운영 환경에서는 validate를 사용합니다.    
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        '[format_sql]': true        
+
+# 개발시 SQL 로깅을 하여 어떤 값으로 어떤 SQL이 실행되는지 확인합니다.
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+      type:
+        descriptor:
+          sql:
+            BasicBinder: TRACE
