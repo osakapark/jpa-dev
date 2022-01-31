@@ -130,8 +130,7 @@ public class SettingsController {
 		System.out.println("tags :" +tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
 		return SETTINGS_TAGS_VIEW_NAME;
 	}
-	
-	
+		
 	@SuppressWarnings("rawtypes")
 	@PostMapping("/settings/tags/add")
 	@ResponseBody
