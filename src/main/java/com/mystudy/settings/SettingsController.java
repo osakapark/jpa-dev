@@ -1,5 +1,6 @@
 package com.mystudy.settings;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mystudy.domain.Member;
 import com.mystudy.domain.Tag;
 import com.mystudy.member.CurrentUser;
@@ -45,12 +49,12 @@ public class SettingsController {
 	static final String SETTINGS_MEMBER_URL = "/" + SETTINGS_MEMBER_VIEW_NAME;
 	static final String SETTINGS_TAGS_VIEW_NAME = "settings/tags";
 	static final String SETTINGS_TAGS_URL = "/" + SETTINGS_TAGS_VIEW_NAME;
-	
 
 	private final MemberService memberService;
 	private final ModelMapper modelMapper;
 	private final NicknameValidator nicknameValidator;
 	private final TagRepository tagrepository;
+	private final ObjectMapper objectMapper;
 
 	@InitBinder("passwordForm")
 	public void passwordForminitBinder(WebDataBinder webDataBinder) {
@@ -123,30 +127,44 @@ public class SettingsController {
 	}
 
 	@GetMapping(SETTINGS_TAGS_URL)
-	public String updateTags(@CurrentUser Member member, Model model) {
+	public String updateTags(@CurrentUser Member member, Model model) throws JsonProcessingException {
 		model.addAttribute(member);
 		Set<Tag> tags = memberService.getTags(member);
-		model.addAttribute("tags", tags.stream().map(Tag::getTitle).collect(Collectors.toList()));	
-		System.out.println("tags :" +tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
+		model.addAttribute("tags", tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
+		System.out.println("tags :" + tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
+		
+		List<String> allTags = tagrepository.findAll().stream().map(Tag::getTitle).collect(Collectors.toList());
+		model.addAttribute("whitelist", objectMapper.writeValueAsString(allTags));
+		System.out.println("whitelist :" + objectMapper.writeValueAsString(allTags));
 		return SETTINGS_TAGS_VIEW_NAME;
 	}
-		
+
 	@SuppressWarnings("rawtypes")
-	@PostMapping("/settings/tags/add")
+	@PostMapping(SETTINGS_TAGS_URL + "/add")
 	@ResponseBody
 	public ResponseEntity addTag(@CurrentUser Member member, @RequestBody TagForm tagForm) {
 		String title = tagForm.getTagTitle();
-		
 		Tag tag = tagrepository.findByTitle(title);
-		if(tag == null ) {
-			tag = tagrepository.save(Tag.builder().title(tagForm.getTagTitle()).build());
+		if (tag == null) {
+			tag = tagrepository.save(Tag.builder().title(title).build());
 		}
 		memberService.addTag(member, tag);
 		return ResponseEntity.ok().build();
 	}
-	
-	
-	
+
+	@SuppressWarnings("rawtypes")
+	@PostMapping(SETTINGS_TAGS_URL + "/remove")
+	@ResponseBody
+	public ResponseEntity removeTag(@CurrentUser Member member, @RequestBody TagForm tagForm) {
+		String title = tagForm.getTagTitle();
+		Tag tag = tagrepository.findByTitle(title);
+		if (tag == null) {
+			return ResponseEntity.badRequest().build();
+		}
+		memberService.removeTag(member, tag);
+		return ResponseEntity.ok().build();
+	}
+
 	@GetMapping(SETTINGS_MEMBER_URL)
 	public String updateMemberForm(@CurrentUser Member member, Model model) {
 		model.addAttribute(member);

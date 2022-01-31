@@ -128,4 +128,9 @@ public class MemberService implements UserDetailsService {
 		Optional<Member> byId = memberRepository.findById(member.getId());
 		return byId.orElseThrow().getTags();
 	}
+
+	public void removeTag(Member member, Tag tag) {
+		Optional<Member> byId = memberRepository.findById(member.getId());
+		byId.orElseThrow().getTags().remove(tag);
+	}
 }
