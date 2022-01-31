@@ -53,9 +53,20 @@ public class Member {
 	@Basic(fetch = FetchType.EAGER)
 	private String profileImage;
 
-	private boolean createdByEmail;
+	private boolean studyCreatedByEmail;
+	
+	@Builder.Default()
+	private boolean studyCreatedByWeb = true;
+	
+	private boolean studyEnrollmentResultByEmail;
+	
+	@Builder.Default()
+	private boolean studyEnrollmentResultByWeb = true;
+    private boolean studyUpdatedByEmail;
 
-	private boolean createdByWeb;
+    @Builder.Default()
+    private boolean studyUpdatedByWeb = true;	
+		 
 
 	public void generateEmailCheckToken() {
 		this.emailCheckToken = UUID.randomUUID().toString();
@@ -72,6 +83,6 @@ public class Member {
 	}
 	
 	public boolean canSendConfirmEmail() {
-		return this.emailCheckTokenGeneratedDttm.isBefore(LocalDateTime.now().minusMinutes(1));
+		return this.emailCheckTokenGeneratedDttm.isBefore(LocalDateTime.now().minusSeconds(10));
 	}
 }

@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.mystudy.member.MemberRepository;
 import com.mystudy.member.MemberService;
-import com.mystudy.member.SignUpForm;
+import com.mystudy.member.form.SignUpForm;
 
 @SpringBootTest
 @AutoConfigureMockMvc

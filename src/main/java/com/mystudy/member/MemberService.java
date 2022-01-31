@@ -1,12 +1,8 @@
 package com.mystudy.member;
 
 import java.util.List;
-
 import javax.validation.Valid;
-
-import org.apache.logging.log4j.message.SimpleMessage;
-import org.aspectj.weaver.NewConstructorTypeMunger;
-
+import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,21 +14,22 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.mystudy.domain.Member;
-import com.mystudy.settings.Profile;
+import com.mystudy.member.form.SignUpForm;
+import com.mystudy.settings.form.Notifications;
+import com.mystudy.settings.form.Profile;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class MemberService implements UserDetailsService{
+public class MemberService implements UserDetailsService {
 	private final MemberRepository memberRepository;
 	private final JavaMailSender javaMailSender;
 	private final PasswordEncoder passwordEncoder;
+	private final ModelMapper modelMapper;
 
-	
 	public Member processNewMember(SignUpForm signUpForm) {
 		Member newMember = saveNewMember(signUpForm);
 		newMember.generateEmailCheckToken();
@@ -47,7 +44,7 @@ public class MemberService implements UserDetailsService{
 				.email(signUpForm.getEmail())
 				.nickname(signUpForm.getNickname())
 				.password(passwordEncoder.encode(signUpForm.getPassword()))
-				.createdByWeb(true)				
+				.studyCreatedByWeb(true)				
 				.build();
 		//@formatter:on
 		return memberRepository.save(member);
@@ -61,14 +58,11 @@ public class MemberService implements UserDetailsService{
 				"/check-email-token?token=" + newMember.getEmailCheckToken() + "&email=" + newMember.getEmail());
 		javaMailSender.send(mailMessage);
 	}
-	
-	
+
 	public void login(Member member) {
-		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-			new UserMember(member),
-			member.getPassword(),
-			List.of(new SimpleGrantedAuthority("ROLE_USER")));
-		SecurityContextHolder.getContext().setAuthentication(token);				
+		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(new UserMember(member),
+				member.getPassword(), List.of(new SimpleGrantedAuthority("ROLE_USER")));
+		SecurityContextHolder.getContext().setAuthentication(token);
 	}
 
 	@Transactional(readOnly = true)
@@ -85,18 +79,39 @@ public class MemberService implements UserDetailsService{
 
 		return new UserMember(member);
 	}
-	
+
 	public void completeSignUp(Member member) {
 		member.completeSignUp();
 		login(member);
 	}
 
 	public void updateProfile(Member member, Profile profile) {
-		member.setUrl(profile.getUrl());
-		member.setOccupation(profile.getOccupation());
-		member.setLocation(profile.getLocation());
-		member.setBio(profile.getBio());
-		
+		modelMapper.map(profile, member);
 		memberRepository.save(member);
+	}
+
+	public void updatePassword(Member member, String newPassword) {
+		member.setPassword(passwordEncoder.encode(newPassword));
+		memberRepository.save(member);
+	}
+
+	public void updateNotifications(Member member, Notifications notifications) {
+		modelMapper.map(notifications, member);
+		memberRepository.save(member);
+	}
+
+	public void updateNickname(Member member, String nickname) {
+		member.setNickname(nickname);
+		memberRepository.save(member);
+		login(member);
+	}
+
+	public void sendLoginLink(Member member) {
+		member.generateEmailCheckToken();
+		SimpleMailMessage mailMessage = new SimpleMailMessage();
+		mailMessage.setTo(member.getEmail());
+		mailMessage.setSubject("스터디갈래, 로그인 링크");
+		mailMessage.setText("/login-by-email?token=" + member.getEmailCheckToken() + "&email=" + member.getEmail());
+		javaMailSender.send(mailMessage);
 	}
 }

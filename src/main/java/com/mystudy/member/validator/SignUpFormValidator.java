@@ -1,8 +1,11 @@
-package com.mystudy.member;
+package com.mystudy.member.validator;
 
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
+import com.mystudy.member.MemberRepository;
+import com.mystudy.member.form.SignUpForm;
 
 import lombok.RequiredArgsConstructor;
 

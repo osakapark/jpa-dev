@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 
 import com.mystudy.member.MemberService;
-import com.mystudy.member.SignUpForm;
+import com.mystudy.member.form.SignUpForm;
 
 import lombok.RequiredArgsConstructor;
 
