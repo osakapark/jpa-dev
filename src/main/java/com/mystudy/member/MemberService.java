@@ -36,21 +36,15 @@ public class MemberService implements UserDetailsService {
 
 	public Member processNewMember(SignUpForm signUpForm) {
 		Member newMember = saveNewMember(signUpForm);
-		newMember.generateEmailCheckToken();
 		sendSignUpConfirmEmail(newMember);
 		return newMember;
 	}
 
 	private Member saveNewMember(@Valid SignUpForm signUpForm) {
+		signUpForm.setPassword(passwordEncoder.encode(signUpForm.getPassword()));
+		Member member = modelMapper.map(signUpForm, Member.class);
+		member.generateEmailCheckToken();
 
-		// @formatter:off
-		Member member =  Member.builder()
-				.email(signUpForm.getEmail())
-				.nickname(signUpForm.getNickname())
-				.password(passwordEncoder.encode(signUpForm.getPassword()))
-				.studyCreatedByWeb(true)				
-				.build();
-		//@formatter:on
 		return memberRepository.save(member);
 	}
 
