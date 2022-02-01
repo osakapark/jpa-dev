@@ -76,6 +76,10 @@ public class Member {
     @ManyToMany
     private Set<Tag> tags = new HashSet<>();
     
+    @Builder.Default()
+    @ManyToMany
+    private Set<Zone> zones = new HashSet<>();
+    
 	public void generateEmailCheckToken() {
 		this.emailCheckToken = UUID.randomUUID().toString();
 		this.emailCheckTokenGeneratedDttm = LocalDateTime.now();

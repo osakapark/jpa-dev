@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -22,38 +23,43 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mystudy.domain.Member;
 import com.mystudy.domain.Tag;
-import com.mystudy.member.CurrentUser;
+import com.mystudy.domain.Zone;
+import com.mystudy.member.CurrentMember;
 import com.mystudy.member.MemberService;
 import com.mystudy.settings.form.NicknameForm;
 import com.mystudy.settings.form.Notifications;
 import com.mystudy.settings.form.PasswordForm;
 import com.mystudy.settings.form.Profile;
 import com.mystudy.settings.form.TagForm;
+import com.mystudy.settings.form.ZoneForm;
 import com.mystudy.settings.validator.NicknameValidator;
 import com.mystudy.settings.validator.PasswordFormValidator;
 import com.mystudy.tag.TagRepository;
-
+import com.mystudy.zone.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 
+import static com.mystudy.settings.SettingsController.ROOT;
+import static com.mystudy.settings.SettingsController.SETTINGS;
+
 @Controller
+@RequestMapping(ROOT + SETTINGS)
 @RequiredArgsConstructor
 public class SettingsController {
 
-	static final String SETTINGS_PROFILE_VIEW_NAME = "settings/profile";
-	static final String SETTINGS_PROFILE_URL = "/" + SETTINGS_PROFILE_VIEW_NAME;
-	static final String SETTINGS_PASSWORD_VIEW_NAME = "settings/password";
-	static final String SETTINGS_PASSWORD_URL = "/" + SETTINGS_PASSWORD_VIEW_NAME;
-	static final String SETTINGS_NOTIFICATIONS_VIEW_NAME = "settings/notifications";
-	static final String SETTINGS_NOTIFICATIONS_URL = "/" + SETTINGS_NOTIFICATIONS_VIEW_NAME;
-	static final String SETTINGS_MEMBER_VIEW_NAME = "settings/member";
-	static final String SETTINGS_MEMBER_URL = "/" + SETTINGS_MEMBER_VIEW_NAME;
-	static final String SETTINGS_TAGS_VIEW_NAME = "settings/tags";
-	static final String SETTINGS_TAGS_URL = "/" + SETTINGS_TAGS_VIEW_NAME;
+	static final String ROOT = "/";
+	static final String SETTINGS = "settings";
+	static final String PROFILE = "/profile";
+	static final String PASSWORD = "/password";
+	static final String NOTIFICATIONS = "/notifications";
+	static final String MEMBER = "/member";
+	static final String TAGS = "/tags";
+	static final String ZONES = "/zones";
 
 	private final MemberService memberService;
 	private final ModelMapper modelMapper;
 	private final NicknameValidator nicknameValidator;
 	private final TagRepository tagrepository;
+	private final ZoneRepository zoneRepository;
 	private final ObjectMapper objectMapper;
 
 	@InitBinder("passwordForm")
@@ -66,83 +72,83 @@ public class SettingsController {
 		webDataBinder.addValidators(nicknameValidator);
 	}
 
-	@GetMapping(SETTINGS_PROFILE_URL)
-	public String updateProfileForm(@CurrentUser Member member, Model model) {
+	@GetMapping(PROFILE)
+	public String updateProfileForm(@CurrentMember Member member, Model model) {
 		model.addAttribute(member);
 		model.addAttribute(modelMapper.map(member, Profile.class));
-		return SETTINGS_PROFILE_VIEW_NAME;
+		return SETTINGS + PROFILE;
 	}
 
-	@PostMapping(SETTINGS_PROFILE_URL)
-	public String updateProfile(@CurrentUser Member member, @Valid Profile profile, Errors errors, Model model,
+	@PostMapping(PROFILE)
+	public String updateProfile(@CurrentMember Member member, @Valid Profile profile, Errors errors, Model model,
 			RedirectAttributes attributes) {
 		if (errors.hasErrors()) {
 			model.addAttribute(member);
-			return SETTINGS_PROFILE_VIEW_NAME;
+			return SETTINGS + PROFILE;
 		}
 
 		memberService.updateProfile(member, profile);
 		attributes.addFlashAttribute("message", "프로필 수정했다");
-		return "redirect:" + SETTINGS_PROFILE_URL;
+		return "redirect:/" + SETTINGS + PROFILE;
 	}
 
-	@GetMapping(SETTINGS_PASSWORD_URL)
-	public String updatePasswordForm(@CurrentUser Member member, Model model) {
+	@GetMapping(PASSWORD)
+	public String updatePasswordForm(@CurrentMember Member member, Model model) {
 		model.addAttribute(member);
 		model.addAttribute(new PasswordForm());
-		return SETTINGS_PASSWORD_VIEW_NAME;
+		return SETTINGS + PASSWORD;
 	}
 
-	@PostMapping(SETTINGS_PASSWORD_URL)
-	public String updatePassword(@CurrentUser Member member, @Valid PasswordForm passwordForm, Errors errors,
+	@PostMapping(PASSWORD)
+	public String updatePassword(@CurrentMember Member member, @Valid PasswordForm passwordForm, Errors errors,
 			Model model, RedirectAttributes attributes) {
 		if (errors.hasErrors()) {
 			model.addAttribute(member);
-			return SETTINGS_PASSWORD_VIEW_NAME;
+			return SETTINGS + PASSWORD;
 		}
 
 		memberService.updatePassword(member, passwordForm.getNewPassword());
 		attributes.addFlashAttribute("message", "패스워드 변경했다.");
-		return "redirect:" + SETTINGS_PASSWORD_URL;
+		return "redirect:/" + SETTINGS + PASSWORD;
 	}
 
-	@GetMapping(SETTINGS_NOTIFICATIONS_URL)
-	public String updateNotificationsForm(@CurrentUser Member member, Model model) {
+	@GetMapping(NOTIFICATIONS)
+	public String updateNotificationsForm(@CurrentMember Member member, Model model) {
 		model.addAttribute(member);
 		model.addAttribute(modelMapper.map(member, Notifications.class));
-		return SETTINGS_NOTIFICATIONS_VIEW_NAME;
+		return SETTINGS + NOTIFICATIONS;
 	}
 
-	@PostMapping(SETTINGS_NOTIFICATIONS_URL)
-	public String updateNotifications(@CurrentUser Member member, @Valid Notifications notifications, Errors errors,
+	@PostMapping(NOTIFICATIONS)
+	public String updateNotifications(@CurrentMember Member member, @Valid Notifications notifications, Errors errors,
 			Model model, RedirectAttributes attributes) {
 		if (errors.hasErrors()) {
 			model.addAttribute(member);
-			return SETTINGS_NOTIFICATIONS_VIEW_NAME;
+			return SETTINGS + NOTIFICATIONS;
 		}
 
 		memberService.updateNotifications(member, notifications);
 		attributes.addFlashAttribute("message", "알림설정 변경했다.");
-		return "redirect:" + SETTINGS_NOTIFICATIONS_URL;
+		return "redirect:/" + SETTINGS + NOTIFICATIONS;
 	}
 
-	@GetMapping(SETTINGS_TAGS_URL)
-	public String updateTags(@CurrentUser Member member, Model model) throws JsonProcessingException {
+	@GetMapping(TAGS)
+	public String updateTags(@CurrentMember Member member, Model model) throws JsonProcessingException {
 		model.addAttribute(member);
 		Set<Tag> tags = memberService.getTags(member);
 		model.addAttribute("tags", tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
 		System.out.println("tags :" + tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
-		
+
 		List<String> allTags = tagrepository.findAll().stream().map(Tag::getTitle).collect(Collectors.toList());
 		model.addAttribute("whitelist", objectMapper.writeValueAsString(allTags));
 		System.out.println("whitelist :" + objectMapper.writeValueAsString(allTags));
-		return SETTINGS_TAGS_VIEW_NAME;
+		return SETTINGS + TAGS;
 	}
 
 	@SuppressWarnings("rawtypes")
-	@PostMapping(SETTINGS_TAGS_URL + "/add")
+	@PostMapping(TAGS + "/add")
 	@ResponseBody
-	public ResponseEntity addTag(@CurrentUser Member member, @RequestBody TagForm tagForm) {
+	public ResponseEntity addTag(@CurrentMember Member member, @RequestBody TagForm tagForm) {
 		String title = tagForm.getTagTitle();
 		Tag tag = tagrepository.findByTitle(title);
 		if (tag == null) {
@@ -153,9 +159,9 @@ public class SettingsController {
 	}
 
 	@SuppressWarnings("rawtypes")
-	@PostMapping(SETTINGS_TAGS_URL + "/remove")
+	@PostMapping(TAGS + "/remove")
 	@ResponseBody
-	public ResponseEntity removeTag(@CurrentUser Member member, @RequestBody TagForm tagForm) {
+	public ResponseEntity removeTag(@CurrentMember Member member, @RequestBody TagForm tagForm) {
 		String title = tagForm.getTagTitle();
 		Tag tag = tagrepository.findByTitle(title);
 		if (tag == null) {
@@ -165,23 +171,64 @@ public class SettingsController {
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping(SETTINGS_MEMBER_URL)
-	public String updateMemberForm(@CurrentUser Member member, Model model) {
+	@GetMapping(ZONES)
+	public String updateZoneForm(@CurrentMember Member member, Model model) throws JsonProcessingException {
 		model.addAttribute(member);
-		model.addAttribute(modelMapper.map(member, NicknameForm.class));
-		return SETTINGS_MEMBER_VIEW_NAME;
+
+		Set<Zone> zones = memberService.getZones(member);
+		model.addAttribute("zones", zones.stream().map(Zone::toString).collect(Collectors.toList()));
+		System.out.println("zones1 :" + zones.stream().map(Zone::toString).collect(Collectors.toList()));
+
+		List<String> allZones = zoneRepository.findAll().stream().map(Zone::toString).collect(Collectors.toList());
+		model.addAttribute("whitelist", objectMapper.writeValueAsString(allZones));
+		System.out.println("zones2 :" + objectMapper.writeValueAsString(allZones));
+
+		return SETTINGS + ZONES;
 	}
 
-	@PostMapping(SETTINGS_MEMBER_URL)
-	public String updateMember(@CurrentUser Member member, @Valid NicknameForm nicknameForm, Errors errors, Model model,
-			RedirectAttributes attributes) {
+	@SuppressWarnings("rawtypes")
+	@PostMapping(ZONES + "/add")
+	@ResponseBody
+	public ResponseEntity addZone(@CurrentMember Member member, @RequestBody ZoneForm zoneForm) {
+		Zone zone = zoneRepository.findByCityAndProvince(zoneForm.getCityName(), zoneForm.getProvinceName());
+		if (zone == null) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		memberService.addZone(member, zone);
+		return ResponseEntity.ok().build();
+	}
+
+	@SuppressWarnings("rawtypes")
+	@PostMapping(ZONES + "/remove")
+	@ResponseBody
+	public ResponseEntity removeZone(@CurrentMember Member member, @RequestBody ZoneForm zoneForm) {
+		Zone zone = zoneRepository.findByCityAndProvince(zoneForm.getCityName(), zoneForm.getProvinceName());
+		if (zone == null) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		memberService.removeZone(member, zone);
+		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping(MEMBER)
+	public String updateMemberForm(@CurrentMember Member member, Model model) {
+		model.addAttribute(member);
+		model.addAttribute(modelMapper.map(member, NicknameForm.class));
+		return SETTINGS + MEMBER;
+	}
+
+	@PostMapping(MEMBER)
+	public String updateMember(@CurrentMember Member member, @Valid NicknameForm nicknameForm, Errors errors,
+			Model model, RedirectAttributes attributes) {
 		if (errors.hasErrors()) {
 			model.addAttribute(member);
-			return SETTINGS_MEMBER_VIEW_NAME;
+			return SETTINGS + MEMBER;
 		}
 
 		memberService.updateNickname(member, nicknameForm.getNickname());
 		attributes.addFlashAttribute("message", "닉네임 변경했다.");
-		return "redirect:" + SETTINGS_MEMBER_URL;
+		return "redirect:/" + SETTINGS + MEMBER;
 	}
 }

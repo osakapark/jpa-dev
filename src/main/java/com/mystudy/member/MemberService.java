@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.mystudy.domain.Member;
 import com.mystudy.domain.Tag;
+import com.mystudy.domain.Zone;
 import com.mystudy.member.form.SignUpForm;
 import com.mystudy.settings.form.Notifications;
 import com.mystudy.settings.form.Profile;
@@ -126,5 +127,20 @@ public class MemberService implements UserDetailsService {
 	public void removeTag(Member member, Tag tag) {
 		Optional<Member> byId = memberRepository.findById(member.getId());
 		byId.orElseThrow().getTags().remove(tag);
+	}
+
+	public Set<Zone> getZones(Member member) {
+		Optional<Member> byId = memberRepository.findById(member.getId());
+		return byId.orElseThrow().getZones();
+	}
+
+	public void addZone(Member member, Zone zone) {
+		Optional<Member> byId = memberRepository.findById(member.getId());
+		byId.ifPresent(a -> a.getZones().add(zone));
+	}
+
+	public void removeZone(Member member, Zone zone) {
+		Optional<Member> byId = memberRepository.findById(member.getId());
+		byId.ifPresent(a -> a.getZones().remove(zone));
 	}
 }

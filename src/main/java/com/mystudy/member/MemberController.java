@@ -68,13 +68,13 @@ public class MemberController {
 	}
 
 	@GetMapping("/check-email")
-	public String checkEmail(@CurrentUser Member member, Model model) {
+	public String checkEmail(@CurrentMember Member member, Model model) {
 		model.addAttribute("email", member.getEmail());
 		return "member/check-email";
 	}
 
 	@GetMapping("/resend-confirm-email")
-	public String resendConfirmEmail(@CurrentUser Member member, Model model) {
+	public String resendConfirmEmail(@CurrentMember Member member, Model model) {
 		if (!member.canSendConfirmEmail()) {
 			model.addAttribute("error", "이메일 인증은 1분에 1번만");
 			model.addAttribute("email", member.getEmail());
@@ -87,7 +87,7 @@ public class MemberController {
 	}
 
 	@GetMapping("/profile/{nickname}")
-	public String viewProfile(@PathVariable String nickname, Model model, @CurrentUser Member member) {
+	public String viewProfile(@PathVariable String nickname, Model model, @CurrentMember Member member) {
 		Member byNickName = memberRepository.findByNickname(nickname);
 		if (byNickName == null) {
 			throw new IllegalArgumentException(nickname + " 에 해당하는 사용자가 없습니다.");
