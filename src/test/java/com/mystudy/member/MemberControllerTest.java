@@ -1,6 +1,5 @@
 package com.mystudy.member;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -14,17 +13,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.BDDMockito.Then;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mystudy.domain.Member;
+import com.mystudy.mail.EmailMessage;
+import com.mystudy.mail.EmailService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
@@ -40,9 +38,8 @@ public class MemberControllerTest {
 	private MemberRepository memberRepository;
 	
 	@MockBean
-	JavaMailSender javaMailSender;
-	
-	
+	private EmailService emailService;
+
 	@DisplayName("인증메일 학인 - 입력값 오류")
 	@Test
 	void checkEmailToken_with_wrong_input() throws Exception {
@@ -104,7 +101,7 @@ public class MemberControllerTest {
 	}
 	
 
-	@DisplayName("입력정상")
+	@DisplayName("입력정상dd")
 	@Test
 	void signUpSubmit_with_correct_input() throws Exception {
 		mockMvc.perform(post("/sign-up")
@@ -121,10 +118,10 @@ public class MemberControllerTest {
 		assertNotEquals(member.getPassword(), "11221111");		
 		System.out.println("password := " + member.getPassword());
 		
-		then(javaMailSender).should().send(any(SimpleMailMessage.class));
+		then(emailService).should().sendEmail(any(EmailMessage.class));
+		System.out.println("emailService:" + emailService.getClass());
+				
 		
-		
-	}
-	
+	}	
 
 }

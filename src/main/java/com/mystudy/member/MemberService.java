@@ -6,8 +6,6 @@ import java.util.Set;
 
 import javax.validation.Valid;
 import org.modelmapper.ModelMapper;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,9 +15,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+import com.mystudy.config.AppProperties;
 import com.mystudy.domain.Member;
 import com.mystudy.domain.Tag;
 import com.mystudy.domain.Zone;
+import com.mystudy.mail.EmailMessage;
+import com.mystudy.mail.EmailService;
 import com.mystudy.member.form.SignUpForm;
 import com.mystudy.settings.form.Notifications;
 import com.mystudy.settings.form.Profile;
@@ -31,9 +35,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberService implements UserDetailsService {
 	private final MemberRepository memberRepository;
-	private final JavaMailSender javaMailSender;
+	private final EmailService emailService;
 	private final PasswordEncoder passwordEncoder;
 	private final ModelMapper modelMapper;
+	private final AppProperties appProperties;
+	private final TemplateEngine templateEngine;
 
 	public Member processNewMember(SignUpForm signUpForm) {
 		Member newMember = saveNewMember(signUpForm);
@@ -50,12 +56,18 @@ public class MemberService implements UserDetailsService {
 	}
 
 	public void sendSignUpConfirmEmail(Member newMember) {
-		SimpleMailMessage mailMessage = new SimpleMailMessage();
-		mailMessage.setTo(newMember.getEmail());
-		mailMessage.setSubject("회원가입 인증");
-		mailMessage.setText(
+		Context context = new Context();
+		context.setVariable("link",
 				"/check-email-token?token=" + newMember.getEmailCheckToken() + "&email=" + newMember.getEmail());
-		javaMailSender.send(mailMessage);
+		context.setVariable("nickname", newMember.getNickname());
+		context.setVariable("linkName", "이메일 인증하자");
+		context.setVariable("message", "스터디 갈래 서비스를 사용하려면 링크 클릭하자");
+		context.setVariable("host", appProperties.getHost());
+		String message = templateEngine.process("mail/simple-link", context);
+
+		EmailMessage emailMessage = EmailMessage.builder().to(newMember.getEmail()).subject("스터다 갈래 회원 가입 인증")
+				.message(message).build();
+		emailService.sendEmail(emailMessage);
 	}
 
 	public void login(Member member) {
@@ -106,12 +118,21 @@ public class MemberService implements UserDetailsService {
 	}
 
 	public void sendLoginLink(Member member) {
-		member.generateEmailCheckToken();
-		SimpleMailMessage mailMessage = new SimpleMailMessage();
-		mailMessage.setTo(member.getEmail());
-		mailMessage.setSubject("스터디갈래, 로그인 링크");
-		mailMessage.setText("/login-by-email?token=" + member.getEmailCheckToken() + "&email=" + member.getEmail());
-		javaMailSender.send(mailMessage);
+		Context context = new Context();
+		context.setVariable("link",
+				"/login-by-email?token=" + member.getEmailCheckToken() + "&email=" + member.getEmail());
+		context.setVariable("nickname", member.getNickname());
+		context.setVariable("linkName", "스터디 갈래, 로그인 ");
+		context.setVariable("message", "로그이니 하려면 아래 링크 클릭하자");
+		context.setVariable("host", appProperties.getHost());
+		String message = templateEngine.process("mail/simple-link", context);
+	
+		EmailMessage emailMessage = EmailMessage.builder()
+				.to(member.getEmail())
+				.subject("스터디 갈래, 로그인 링크")
+				.message(message)
+				.build();
+		emailService.sendEmail(emailMessage);
 	}
 
 	public void addTag(Member member, Tag tag) {

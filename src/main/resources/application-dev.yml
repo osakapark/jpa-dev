@@ -1,7 +1,4 @@
 spring:
-  profiles:
-    active:
-    - local
 
   devtools: 
     livereload:
@@ -14,10 +11,30 @@ spring:
   # 개발할 때에만 create-drop 또는 update를 사용하고 운영 환경에서는 validate를 사용합니다.    
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         '[format_sql]': true        
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testdb
+    username: testuser
+    password: testpass
+
+  mail:
+    host: smtp.naver.com
+    port: 465
+    username: aaaa@naver.com
+    password: xxxx
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          ssl:
+            enable: true
+            trust: smtp.naver.com
+
 
 # 개발시 SQL 로깅을 하여 어떤 값으로 어떤 SQL이 실행되는지 확인합니다.
 logging:
@@ -31,4 +48,5 @@ logging:
             BasicBinder: TRACE
             
 app:
-  host: http://localhost:8080         
+  host: http://localhost:8080
+  mailfrom: xxxx@naver.com             
