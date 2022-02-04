@@ -33,9 +33,9 @@ import com.mystudy.domain.Tag;
 import com.mystudy.domain.Zone;
 import com.mystudy.member.MemberRepository;
 import com.mystudy.member.MemberService;
-import com.mystudy.settings.form.TagForm;
-import com.mystudy.settings.form.ZoneForm;
+import com.mystudy.tag.TagForm;
 import com.mystudy.tag.TagRepository;
+import com.mystudy.zone.ZoneForm;
 import com.mystudy.zone.ZoneRepository;
 
 import static com.mystudy.settings.SettingsController.*;

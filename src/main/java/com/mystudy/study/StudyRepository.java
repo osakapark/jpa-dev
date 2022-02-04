@@ -7,10 +7,15 @@ import com.mystudy.domain.Study;
 
 @Transactional(readOnly = true)
 public interface StudyRepository extends JpaRepository<Study, Long> {
-	
 
-    boolean existsByPath(String path);
-	
-	@EntityGraph(value="Study.withAll", type = EntityGraph.EntityGraphType.LOAD)
+	boolean existsByPath(String path);
+
+	@EntityGraph(value = "Study.withAll", type = EntityGraph.EntityGraphType.LOAD)
 	Study findByPath(String path);
+
+	@EntityGraph(value = "Study.withTagsAndManagers", type = EntityGraph.EntityGraphType.FETCH)
+	Study findMemberWithTagsByPath(String path);
+
+	@EntityGraph(value = "Study.withZonesAndManagers", type = EntityGraph.EntityGraphType.FETCH)
+	Study findMemberWithZonesByPath(String path);
 }

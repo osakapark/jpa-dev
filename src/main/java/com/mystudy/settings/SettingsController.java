@@ -30,11 +30,12 @@ import com.mystudy.settings.form.NicknameForm;
 import com.mystudy.settings.form.Notifications;
 import com.mystudy.settings.form.PasswordForm;
 import com.mystudy.settings.form.Profile;
-import com.mystudy.settings.form.TagForm;
-import com.mystudy.settings.form.ZoneForm;
 import com.mystudy.settings.validator.NicknameValidator;
 import com.mystudy.settings.validator.PasswordFormValidator;
+import com.mystudy.tag.TagForm;
 import com.mystudy.tag.TagRepository;
+import com.mystudy.tag.TagService;
+import com.mystudy.zone.ZoneForm;
 import com.mystudy.zone.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -58,6 +59,7 @@ public class SettingsController {
 	private final MemberService memberService;
 	private final ModelMapper modelMapper;
 	private final NicknameValidator nicknameValidator;
+	private final TagService tagService;
 	private final TagRepository tagrepository;
 	private final ZoneRepository zoneRepository;
 	private final ObjectMapper objectMapper;
@@ -149,11 +151,7 @@ public class SettingsController {
 	@PostMapping(TAGS + "/add")
 	@ResponseBody
 	public ResponseEntity addTag(@CurrentMember Member member, @RequestBody TagForm tagForm) {
-		String title = tagForm.getTagTitle();
-		Tag tag = tagrepository.findByTitle(title);
-		if (tag == null) {
-			tag = tagrepository.save(Tag.builder().title(title).build());
-		}
+		Tag tag = tagService.findOrCreateNew(tagForm.getTagTitle());
 		memberService.addTag(member, tag);
 		return ResponseEntity.ok().build();
 	}

@@ -23,8 +23,21 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NamedEntityGraph(name = "Study.withAll", attributeNodes = { @NamedAttributeNode("tags"), @NamedAttributeNode("zones"),
-		@NamedAttributeNode("managers"), @NamedAttributeNode("members") })
+//@formatter:off	
+@NamedEntityGraph(name = "Study.withAll", attributeNodes = {
+		@NamedAttributeNode("tags"), 
+		@NamedAttributeNode("zones"),
+		@NamedAttributeNode("managers"), 
+		@NamedAttributeNode("members") }
+)
+@NamedEntityGraph(name = "Study.withTagsAndManagers", attributeNodes = {
+		@NamedAttributeNode("tags"),		
+		@NamedAttributeNode("managers")}
+)
+@NamedEntityGraph(name = "Study.withZonesAndManagers", attributeNodes = {
+        @NamedAttributeNode("zones"),
+        @NamedAttributeNode("managers")})
+//@formatter:on
 @Entity
 @Getter
 @Setter
@@ -32,6 +45,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+
 public class Study {
 	@Id
 	@GeneratedValue
@@ -103,5 +117,9 @@ public class Study {
 
 	public void addMember(Member member) {
 		this.members.add(member);
+	}
+
+	public String getImage() {
+		return image != null ? image : "/images/apeach_banner02.png";
 	}
 }
