@@ -126,12 +126,9 @@ public class MemberService implements UserDetailsService {
 		context.setVariable("message", "로그이니 하려면 아래 링크 클릭하자");
 		context.setVariable("host", appProperties.getHost());
 		String message = templateEngine.process("mail/simple-link", context);
-	
-		EmailMessage emailMessage = EmailMessage.builder()
-				.to(member.getEmail())
-				.subject("스터디 갈래, 로그인 링크")
-				.message(message)
-				.build();
+
+		EmailMessage emailMessage = EmailMessage.builder().to(member.getEmail()).subject("스터디 갈래, 로그인 링크")
+				.message(message).build();
 		emailService.sendEmail(emailMessage);
 	}
 
@@ -164,4 +161,13 @@ public class MemberService implements UserDetailsService {
 		Optional<Member> byId = memberRepository.findById(member.getId());
 		byId.ifPresent(a -> a.getZones().remove(zone));
 	}
+
+	public Member getMember(String nickname ) {
+		Member member = memberRepository.findByNickname(nickname);
+		if(member == null ) {
+			throw new IllegalArgumentException(nickname +  "  사용자 없다.");
+		}
+		return member;
+	}
+
 }

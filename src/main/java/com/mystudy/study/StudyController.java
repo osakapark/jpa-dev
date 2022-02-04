@@ -34,13 +34,6 @@ public class StudyController {
 	public void studyFormInitBinder(WebDataBinder webDataBinder) {
 		webDataBinder.addValidators(studyFormValidator);
 	}
-	
-	@GetMapping("/study/{path}")
-	private String viewStudy(@CurrentMember Member member, @PathVariable String path, Model model) {
-		model.addAttribute(member);
-		model.addAttribute(studyRepository.findByPath(path));
-		return "study/view";
-	}
 
 	@GetMapping("/new-study")
 	public String newStudyForm(@CurrentMember Member member, Model model) {
@@ -57,6 +50,23 @@ public class StudyController {
 		}
 		Study newStudy = studyService.createNewStudy(modelMapper.map(studyForm, Study.class), member);
 		return "redirect:/study/" + URLEncoder.encode(newStudy.getPath(), StandardCharsets.UTF_8);
+	}
 
+	@GetMapping("/study/{path}")
+	private String viewStudy(@CurrentMember Member member, @PathVariable String path, Model model) {
+		Study study = studyService.getStudy(path);
+		model.addAttribute(member);
+		model.addAttribute(study);
+
+		return "study/view";
+	}
+
+	@GetMapping("/study/{path}/members")
+	public String viewStudyMembers(@CurrentMember Member member, @PathVariable String path, Model model) {
+		Study study = studyService.getStudy(path);
+		model.addAttribute(member);
+		model.addAttribute(study);
+	
+		return "study/members";
 	}
 }

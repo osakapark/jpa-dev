@@ -88,13 +88,12 @@ public class MemberController {
 
 	@GetMapping("/profile/{nickname}")
 	public String viewProfile(@PathVariable String nickname, Model model, @CurrentMember Member member) {
-		Member byNickName = memberRepository.findByNickname(nickname);
-		if (byNickName == null) {
-			throw new IllegalArgumentException(nickname + " 에 해당하는 사용자가 없습니다.");
-		}
+		
+		Member memberToView = memberService.getMember(nickname);
+		model.addAttribute(memberToView);
+		model.addAttribute("isOwner", memberToView.equals(member));
+		
 
-		model.addAttribute(byNickName);
-		model.addAttribute("isOwner", byNickName.equals(member));
 		return "member/profile";
 	}
 

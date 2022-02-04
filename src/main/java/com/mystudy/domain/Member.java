@@ -59,27 +59,27 @@ public class Member {
 	private String profileImage;
 
 	private boolean studyCreatedByEmail;
-	
+
 	@Builder.Default()
 	private boolean studyCreatedByWeb = true;
-	
+
 	private boolean studyEnrollmentResultByEmail;
-	
+
 	@Builder.Default()
 	private boolean studyEnrollmentResultByWeb = true;
-    private boolean studyUpdatedByEmail;
+	private boolean studyUpdatedByEmail;
 
-    @Builder.Default()
-    private boolean studyUpdatedByWeb = true;	
-		 
-    @Builder.Default()
-    @ManyToMany
-    private Set<Tag> tags = new HashSet<>();
-    
-    @Builder.Default()
-    @ManyToMany
-    private Set<Zone> zones = new HashSet<>();
-    
+	@Builder.Default()
+	private boolean studyUpdatedByWeb = true;
+
+	@Builder.Default()
+	@ManyToMany
+	private Set<Tag> tags = new HashSet<>();
+
+	@Builder.Default()
+	@ManyToMany
+	private Set<Zone> zones = new HashSet<>();
+
 	public void generateEmailCheckToken() {
 		this.emailCheckToken = UUID.randomUUID().toString();
 		this.emailCheckTokenGeneratedDttm = LocalDateTime.now();
@@ -93,8 +93,12 @@ public class Member {
 	public boolean isValidToken(String token) {
 		return this.emailCheckToken.equals(token);
 	}
-	
+
 	public boolean canSendConfirmEmail() {
 		return this.emailCheckTokenGeneratedDttm.isBefore(LocalDateTime.now().minusSeconds(10));
+	}
+
+	public boolean isManagerOf(Study study) {
+		return study.getManagers().contains(this);
 	}
 }
