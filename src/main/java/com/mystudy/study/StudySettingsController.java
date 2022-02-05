@@ -183,60 +183,97 @@ public class StudySettingsController {
 		return ResponseEntity.ok().build();
 	}
 
+	@GetMapping("/study")
+	public String studySettingForm(@CurrentMember Member member, @PathVariable String path, Model model) {
+		Study study = studyService.getStudyToUpdate(member, path);
+		model.addAttribute(member);
+		model.addAttribute(study);
+		return "study/settings/study";
+	}
+
+	@PostMapping("/study/publish")
+	public String publishStudy(@CurrentMember Member member, @PathVariable String path, RedirectAttributes attributes) {
+		Study study = studyService.getStudyToUpdateStatus(member, path);
+		studyService.publish(study);
+		attributes.addFlashAttribute("message", "스터디를 공개했습니다.");
+		return "redirect:/study/" + getPath(path) + "/settings/study";
+	}
+
+	@PostMapping("/study/close")
+	public String closeStudy(@CurrentMember Member member, @PathVariable String path, RedirectAttributes attributes) {
+		Study study = studyService.getStudyToUpdateStatus(member, path);
+		studyService.close(study);
+		attributes.addFlashAttribute("message", "스터디를 종료했습니다.");
+		return "redirect:/study/" + getPath(path) + "/settings/study";
+	}
+
+	@PostMapping("/recruit/start")
+	public String startRecruit(@CurrentMember Member member, @PathVariable String path, Model model,
+			RedirectAttributes attributes) {
+		Study study = studyService.getStudyToUpdateStatus(member, path);
+		if (!study.canUpdateRecruiting()) {
+			attributes.addFlashAttribute("message", "1시간 안에 인원 모집 설정을 여러번 변경할 수 없습니다.");
+			return "redirect:/study/" + getPath(path) + "/settings/study";
+		}
+
+		studyService.startRecruit(study);
+		attributes.addFlashAttribute("message", "인원 모집을 시작합니다.");
+		return "redirect:/study/" + getPath(path) + "/settings/study";
+	}
+
+	@PostMapping("/recruit/stop")
+	public String stopRecruit(@CurrentMember Member member, @PathVariable String path, Model model,
+			RedirectAttributes attributes) {
+		Study study = studyService.getStudyToUpdate(member, path);
+		if (!study.canUpdateRecruiting()) {
+			attributes.addFlashAttribute("message", "1시간 안에 인원 모집 설정을 여러번 변경할 수 없습니다.");
+			return "redirect:/study/" + getPath(path) + "/settings/study";
+		}
+
+		studyService.stopRecruit(study);
+		attributes.addFlashAttribute("message", "인원 모집을 종료합니다.");
+		return "redirect:/study/" + getPath(path) + "/settings/study";
+	}
+
+	@PostMapping("/study/path")
+	public String updateStudyPath(@CurrentMember Member member, @PathVariable String path, String newPath, Model model,
+			RedirectAttributes attributes) {
+		Study study = studyService.getStudyToUpdateStatus(member, path);
+		if (!studyService.isValidPath(newPath)) {
+			model.addAttribute(member);
+			model.addAttribute(study);
+			model.addAttribute("studyPathError", "해당스터디 경로는 사용 불가능 다른것 써라");
+			return "study/settings/study";
+		}
+
+		studyService.updateStudyPath(study, newPath);
+		attributes.addFlashAttribute("message", "스터디 경로 수정했다");
+		return "redirect:/study/" + getPath(newPath) + "/settings/study";
+	}
+
+	@PostMapping("/study/title")
+	public String updateStudyTitle(@CurrentMember Member member, @PathVariable String path, String newTitle,
+			Model model, RedirectAttributes attributes) {
+		Study study = studyService.getStudyToUpdateStatus(member, path);
+		if (!studyService.isValidTitle(newTitle)) {
+			model.addAttribute(member);
+			model.addAttribute(study);
+			model.addAttribute("studyTitleError", "해당스터디 경로는 사용 불가능 다른것 써라");
+			return "study/settings/study";
+		}
+
+		studyService.updateStudyTitle(study, newTitle);
+		attributes.addFlashAttribute("message", "스터디 이름 수정했다");
+		return "redirect:/study/" + getPath(path) + "/settings/study";
+	}
 	
 
-    @GetMapping("/study")
-    public String studySettingForm(@CurrentMember Member member, @PathVariable String path, Model model) {
-        Study study = studyService.getStudyToUpdate(member, path);
-        model.addAttribute(member);
-        model.addAttribute(study);
-        return "study/settings/study";
-    }
-
-    @PostMapping("/study/publish")
-    public String publishStudy(@CurrentMember Member member, @PathVariable String path,
-                               RedirectAttributes attributes) {
+    @PostMapping("/study/remove")
+    public String removeStudy(@CurrentMember Member member, @PathVariable String path, Model model) {
         Study study = studyService.getStudyToUpdateStatus(member, path);
-        studyService.publish(study);
-        attributes.addFlashAttribute("message", "스터디를 공개했습니다.");
-        return "redirect:/study/" + getPath(path) + "/settings/study";
+        studyService.remove(study);
+        return "redirect:/";
     }
 
-    @PostMapping("/study/close")
-    public String closeStudy(@CurrentMember Member member, @PathVariable String path,
-                             RedirectAttributes attributes) {
-        Study study = studyService.getStudyToUpdateStatus(member, path);
-        studyService.close(study);
-        attributes.addFlashAttribute("message", "스터디를 종료했습니다.");
-        return "redirect:/study/" + getPath(path) + "/settings/study";
-    }
-
-    @PostMapping("/recruit/start")
-    public String startRecruit(@CurrentMember Member member, @PathVariable String path, Model model,
-                               RedirectAttributes attributes) {
-        Study study = studyService.getStudyToUpdateStatus(member, path);
-        if (!study.canUpdateRecruiting()) {
-            attributes.addFlashAttribute("message", "1시간 안에 인원 모집 설정을 여러번 변경할 수 없습니다.");
-            return "redirect:/study/" + getPath(path) + "/settings/study";
-        }
-
-        studyService.startRecruit(study);
-        attributes.addFlashAttribute("message", "인원 모집을 시작합니다.");
-        return "redirect:/study/" + getPath(path) + "/settings/study";
-    }
-
-    @PostMapping("/recruit/stop")
-    public String stopRecruit(@CurrentMember Member member, @PathVariable String path, Model model,
-                              RedirectAttributes attributes) {
-        Study study = studyService.getStudyToUpdate(member, path);
-        if (!study.canUpdateRecruiting()) {
-            attributes.addFlashAttribute("message", "1시간 안에 인원 모집 설정을 여러번 변경할 수 없습니다.");
-            return "redirect:/study/" + getPath(path) + "/settings/study";
-        }
-
-        studyService.stopRecruit(study);
-        attributes.addFlashAttribute("message", "인원 모집을 종료합니다.");
-        return "redirect:/study/" + getPath(path) + "/settings/study";
-    }
-
+	
 }

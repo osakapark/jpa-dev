@@ -166,4 +166,8 @@ public class Study {
 				|| this.recruitingUpdatedDateTime.isBefore(LocalDateTime.now().minusSeconds(10));
 	}
 
+	public boolean isRemovable() {
+		return !this.published; // TODO 모임을 했던 스터디는 삭제할 수 없다.
+	}
+
 }
