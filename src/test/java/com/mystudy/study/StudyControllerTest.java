@@ -9,12 +9,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
-
-import javax.transaction.Transactional;
-
+import org.springframework.transaction.annotation.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -117,22 +114,22 @@ public class StudyControllerTest {
 		assertTrue(study.getMembers().contains(keesun));
 
 	}
-    @Test
-    @WithMember("keesun")
-    @DisplayName("스터디 탈퇴")
-    void leaveStudy() throws Exception {
-    	Member whiteship = createMember("whiteship");
-        Study study = createStudy("test-study", whiteship);
 
-        Member keesun = memberRepository.findByNickname("keesun");
-        studyService.addMember(study, keesun);
+	@Test
+	@WithMember("keesun")
+	@DisplayName("스터디 탈퇴")
+	void leaveStudy() throws Exception {
+		Member whiteship = createMember("whiteship");
+		Study study = createStudy("test-study", whiteship);
 
-        mockMvc.perform(get("/study/" + study.getPath() + "/leave"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/study/" + study.getPath() + "/members"));
+		Member keesun = memberRepository.findByNickname("keesun");
+		studyService.addMember(study, keesun);
 
-        assertFalse(study.getMembers().contains(keesun));
-    }
+		mockMvc.perform(get("/study/" + study.getPath() + "/leave")).andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/study/" + study.getPath() + "/members"));
+
+		assertFalse(study.getMembers().contains(keesun));
+	}
 
 	protected Study createStudy(String path, Member member) {
 		Study study = new Study();
