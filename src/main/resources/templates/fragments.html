@@ -109,10 +109,10 @@
                                 <span sec:authentication="name">Username</span>
                             </h6>
                          </li>
-                        <li>
+                        <li >
                             <a class="dropdown-item" th:href="@{'/profile/' + ${#authentication.name}}">프로필</a>
                         </li>
-                        <li><a class="dropdown-item" >스터디</a></li>
+                        <a class="dropdown-item" >스터디</a>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -213,14 +213,32 @@
                     <a class="btn btn-primary" th:href="@{'/study/' + ${study.path} + '/join'}">
                         스터디 가입
                     </a>
+
+                    <form class="form-inline my-2 my-lg-0" action="#" th:action="@{/study/join}" method="post">
+                        <input id="path" type="hidden" name="path" th:value="${study.path}"  >
+                        <button class="btn btn-primary" type="submit">
+                            스터디 가입 post
+                        </button>
+                    </form>  
+
                     <a class="btn btn-outline-primary" th:href="@{'/study/' + ${study.path} + '/members'}"
-                       th:text="${study.members.size()}">1</a>
-                </span>
+                       th:text="${study.members.size()}">1
+                    </a>
+            </span>
+
             <span sec:authorize="isAuthenticated()"
                   th:if="${!study.closed && study.isMember(#authentication.principal)}" class="btn-group" role="group">
                     <a class="btn btn-outline-warning" th:href="@{'/study/' + ${study.path} + '/leave'}">
                         스터디 탈퇴
                     </a>
+                    <form class="form-inline my-2 my-lg-0" action="#" th:action="@{/study/leave}" method="post">
+                        <input id="path" type="hidden" name="path" th:value="${study.path}"  >
+                        <button class="btn btn-outline-warning" type="submit">
+                            스터디 탈퇴 post
+                        </button>
+                    </form>  
+
+
                     <a class="btn btn-outline-primary" th:href="@{'/study/' + ${study.path} + '/members'}"
                        th:text="${study.members.size()}">1</a>
                 </span>

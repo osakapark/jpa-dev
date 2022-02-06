@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.mystudy.domain.Member;
 import com.mystudy.domain.Study;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequiredArgsConstructor
 public class StudyController {
+	private final StudyRepository studyRepository;
 	private final StudyService studyService;
 	private final ModelMapper modelMapper;
 	private final StudyFormValidator studyFormValidator;
@@ -64,7 +67,37 @@ public class StudyController {
 		Study study = studyService.getStudy(path);
 		model.addAttribute(member);
 		model.addAttribute(study);
-	
+
 		return "study/members";
+	}
+
+	@GetMapping("/study/{path}/join")
+	public String joinStudy(@CurrentMember Member member, @PathVariable String path) {
+		Study study = studyRepository.findStudyWithMembersByPath(path);
+		studyService.addMember(study, member);
+		System.out.println("joinStudy:" + member.getNickname());
+		return "redirect:/study/" + study.getEncodedPath() + "/members";
+	}
+
+	@PostMapping("/study/join")
+	public String joinStudyPost(@CurrentMember Member member, @RequestParam String path) {
+		Study study = studyRepository.findStudyWithMembersByPath(path);
+		studyService.addMember(study, member);
+		return "redirect:/study/" + study.getEncodedPath() + "/members";
+	}
+
+	@GetMapping("/study/{path}/leave")
+	public String leaveStudy(@CurrentMember Member member, @PathVariable String path) {
+		Study study = studyRepository.findStudyWithMembersByPath(path);
+		studyService.removeMember(study, member);
+		System.out.println("leaveStudy:" + member.getNickname());
+		return "redirect:/study/" + study.getEncodedPath() + "/members";
+	}
+
+	@PostMapping("/study/leave")
+	public String leaveStudyPost(@CurrentMember Member member, @RequestParam String path) {
+		Study study = studyRepository.findStudyWithMembersByPath(path);
+		studyService.removeMember(study, member);
+		return "redirect:/study/" + study.getEncodedPath() + "/members";
 	}
 }
