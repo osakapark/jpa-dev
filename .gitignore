@@ -40,3 +40,8 @@ out/
 ### NPM ###
 src/main/resources/static/node_modules
 src/main/resources/static/node
+
+
+# ignore properties file
+application.yml
+application-dev.yml
