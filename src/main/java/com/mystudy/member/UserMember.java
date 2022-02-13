@@ -9,6 +9,7 @@ import com.mystudy.domain.Member;
 
 import lombok.Getter;
 
+@SuppressWarnings("serial")
 @Getter
 public class UserMember extends User{
 	private  Member member;
