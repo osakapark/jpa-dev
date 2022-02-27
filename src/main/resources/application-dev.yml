@@ -35,6 +35,8 @@ spring:
             enable: true
             trust: smtp.naver.com
 
+  mvc:
+    hiddenmethod:      filter:        enabled: true
 
 # 개발시 SQL 로깅을 하여 어떤 값으로 어떤 SQL이 실행되는지 확인합니다.
 logging:
@@ -49,4 +51,6 @@ logging:
             
 app:
   host: http://localhost:8080
-  mailfrom: xxxx@naver.com             
+  mailfrom: xxxx@naver.com      
+  
+         

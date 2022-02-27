@@ -31,4 +31,7 @@ public class EventService {
 		modelMapper.map(eventForm, event);
 	}
 
+	public void deleteEvent(Event event) {
+		eventRepository.delete(event);
+	}
 }
