@@ -13,6 +13,8 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.mystudy.member.UserMember;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -52,7 +54,7 @@ public class Event {
 	private LocalDateTime endDateTime;
 
 	@Column
-	private Integer limetofEnrollments;
+	private Integer limitOfEnrollments;
 
 	@OneToMany(mappedBy = "event")
 	private List<Enrollment> enrollments;
@@ -60,4 +62,38 @@ public class Event {
 	@Enumerated(EnumType.STRING)
 	private EventType eventType;
 
+	
+    public boolean isEnrollableFor(UserMember userAccount) {
+        return isNotClosed() && !isAlreadyEnrolled(userAccount);
+    }
+
+    public boolean isDisenrollableFor(UserMember userAccount) {
+        return isNotClosed() && isAlreadyEnrolled(userAccount);
+    }
+
+    private boolean isNotClosed() {
+        return this.endEnrollmentDateTime.isAfter(LocalDateTime.now());
+    }
+
+    public boolean isAttended(UserMember userAccount) {
+        Member account = userAccount.getMember();
+        for (Enrollment e : this.enrollments) {
+            if (e.getMember().equals(account) && e.isAttended()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isAlreadyEnrolled(UserMember userAccount) {
+    	Member member = userAccount.getMember();
+        for (Enrollment e : this.enrollments) {
+            if (e.getMember().equals(member)) {
+                return true;
+            }
+        }
+        return false;
+    }
+	
 }
