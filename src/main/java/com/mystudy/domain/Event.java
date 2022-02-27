@@ -11,6 +11,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 
 import com.mystudy.member.UserMember;
@@ -18,6 +20,8 @@ import com.mystudy.member.UserMember;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+
+@NamedEntityGraph(name = "Event.withEnrollments", attributeNodes = @NamedAttributeNode("enrollments"))
 
 @Entity
 @Getter
@@ -62,38 +66,41 @@ public class Event {
 	@Enumerated(EnumType.STRING)
 	private EventType eventType;
 
-	
-    public boolean isEnrollableFor(UserMember userAccount) {
-        return isNotClosed() && !isAlreadyEnrolled(userAccount);
-    }
+	public boolean isEnrollableFor(UserMember userAccount) {
+		return isNotClosed() && !isAlreadyEnrolled(userAccount);
+	}
 
-    public boolean isDisenrollableFor(UserMember userAccount) {
-        return isNotClosed() && isAlreadyEnrolled(userAccount);
-    }
+	public boolean isDisenrollableFor(UserMember userAccount) {
+		return isNotClosed() && isAlreadyEnrolled(userAccount);
+	}
 
-    private boolean isNotClosed() {
-        return this.endEnrollmentDateTime.isAfter(LocalDateTime.now());
-    }
+	private boolean isNotClosed() {
+		return this.endEnrollmentDateTime.isAfter(LocalDateTime.now());
+	}
 
-    public boolean isAttended(UserMember userAccount) {
-        Member account = userAccount.getMember();
-        for (Enrollment e : this.enrollments) {
-            if (e.getMember().equals(account) && e.isAttended()) {
-                return true;
-            }
-        }
+	public boolean isAttended(UserMember userAccount) {
+		Member account = userAccount.getMember();
+		for (Enrollment e : this.enrollments) {
+			if (e.getMember().equals(account) && e.isAttended()) {
+				return true;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    private boolean isAlreadyEnrolled(UserMember userAccount) {
-    	Member member = userAccount.getMember();
-        for (Enrollment e : this.enrollments) {
-            if (e.getMember().equals(member)) {
-                return true;
-            }
-        }
-        return false;
-    }
-	
+	public int numberOfRemainSpots() {
+		return this.limitOfEnrollments - (int) this.enrollments.stream().filter(Enrollment::isAccepted).count();
+	}
+
+	private boolean isAlreadyEnrolled(UserMember userAccount) {
+		Member member = userAccount.getMember();
+		for (Enrollment e : this.enrollments) {
+			if (e.getMember().equals(member)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

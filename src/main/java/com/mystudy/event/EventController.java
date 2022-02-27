@@ -1,5 +1,9 @@
 package com.mystudy.event;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.modelmapper.ModelMapper;
@@ -19,6 +23,7 @@ import com.mystudy.domain.Study;
 import com.mystudy.event.form.EventForm;
 import com.mystudy.event.validator.EventValidator;
 import com.mystudy.member.CurrentMember;
+import com.mystudy.study.StudyRepository;
 import com.mystudy.study.StudyService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +38,7 @@ public class EventController {
 	private final ModelMapper modelMapper;
 	private final EventValidator eventValidator;
 	private final EventRepository eventRepository;
+	private final StudyRepository studyRepository;
 
 	@InitBinder("eventForm")
 	public void initBinder(WebDataBinder webDataBinder) {
@@ -67,8 +73,33 @@ public class EventController {
 			Model model) {
 		model.addAttribute(member);
 		model.addAttribute(eventRepository.findById(id).orElseThrow());
-		model.addAttribute(studyService.getStudy(path));
+		model.addAttribute(studyRepository.findStudyWithManagersByPath(path));
 		return "event/view";
+	}
+
+	@GetMapping("/events")
+	public String viewStudyEvents(@CurrentMember Member member, @PathVariable String path, Model model) {
+		Study study = studyService.getStudy(path);
+		model.addAttribute(member);
+		model.addAttribute(study);
+
+		List<Event> events = eventRepository.findByStudyOrderByStartDateTime(study);
+		List<Event> newEvents = new ArrayList<>();
+		List<Event> oldEvents = new ArrayList<>();
+
+		events.forEach(e -> {
+			if (e.getEndDateTime().isBefore(LocalDateTime.now())) {
+				oldEvents.add(e);
+			} else {
+				newEvents.add(e);
+			}
+		});
+
+		model.addAttribute("newEvents", newEvents);
+		model.addAttribute("oldEvents", oldEvents);
+
+		return "study/events";
+
 	}
 
 }
