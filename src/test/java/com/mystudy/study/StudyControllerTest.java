@@ -33,13 +33,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StudyControllerTest {
 	@Autowired
-	MockMvc mockMvc;
+	protected MockMvc mockMvc;
 	@Autowired
-	StudyService studyService;
+	protected StudyService studyService;
 	@Autowired
-	StudyRepository studyRepository;
+	protected StudyRepository studyRepository;
 	@Autowired
-	MemberRepository memberRepository;
+	protected MemberRepository memberRepository;
 
 	@AfterEach
 	void afterEach() {

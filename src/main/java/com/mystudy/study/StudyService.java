@@ -23,7 +23,7 @@ public class StudyService {
 
 	public Study createNewStudy(Study study, Member member) {
 		Study newStudy = studyRepository.save(study);
-		newStudy.addManager(member);		
+		newStudy.addManager(member);
 		return newStudy;
 	}
 
@@ -160,5 +160,11 @@ public class StudyService {
 
 	public void removeMember(Study study, Member member) {
 		study.removeMember(member);
+	}
+
+	public Study getStudyToEnroll(String path) {
+		Study study = studyRepository.findStudyOnlyByPath(path);
+		checkIfExistingStudy(path, study);
+		return study;
 	}
 }

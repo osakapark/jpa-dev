@@ -18,11 +18,11 @@
             <div class="col-4 text-right justify-content-end">
                 <span sec:authorize="isAuthenticated()">
                     <button th:if="${event.isEnrollableFor(#authentication.principal)}"
-                            class="btn btn-outline-primary" data-toggle="modal" data-target="#enroll">
-                        <i class="fa fa-plus-circle"></i> 참가 신청
+                            class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#enroll">
+                        <i class="fa fa-plus-circle"></i> 참가 신청2
                     </button>
                     <button th:if="${event.isDisenrollableFor(#authentication.principal)}"
-                            class="btn btn-outline-primary" data-toggle="modal" data-target="#disenroll">
+                            class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#disenroll">
                         <i class="fa fa-minus-circle"></i> 참가 신청 취소
                     </button>
                     <span class="text-success" th:if="${event.isAttended(#authentication.principal)}" disabled>
@@ -45,15 +45,15 @@
                             <p>감사합니다.</p>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
-                            <form th:action="@{'/study/' + ${study.path} + '/events/' + ${event.id} + '/leave'}" method="post">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                            <form th:action="@{'/study/' + ${study.path} + '/events/' + ${event.id} + '/disenroll'}" method="post">
                                 <button class="btn btn-primary" type="submit" aria-describedby="submitHelp">확인</button>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="modal fade" id="enroll" tabindex="-1" role="dialog" aria-labelledby="enrollmentTitle" aria-hidden="true">
+            <div class="modal fade" id="enroll" tabindex="-1" aria-labelledby="enrollmentTitle" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -68,7 +68,7 @@
                             <p>감사합니다.</p>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
                             <form th:action="@{'/study/' + ${study.path} + '/events/' + ${event.id} + '/enroll'}" method="post">
                                 <button class="btn btn-primary" type="submit" aria-describedby="submitHelp">확인</button>
                             </form>
@@ -113,16 +113,16 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <span class="date-time" th:text="${enroll.enrolledAt}"></span>
+                                    <span class="date-time" th:text="${enroll.enrolledDateTime}"></span>
                                 </td>
                                 <td>
                                     <span th:if="${enroll.accepted}">확정</span>
                                     <span th:if="${!enroll.accepted}">대기중</span>
                                 </td>
                                 <td th:if="${study.isManager(#authentication.principal)}">
-                                    <a th:if="${event.isAcceptable(enroll)}" href="#" class="text-decoration-none"
+                                    <a th:if="${event.canAccept(enroll)}" href="#" class="text-decoration-none"
                                        th:href="@{'/study/' + ${study.path} + '/events/' + ${event.id} + '/enrollments/' + ${enroll.id} + '/accept'}" >신청 수락</a>
-                                    <a th:if="${event.isRejectable(enroll)}" href="#" class="text-decoration-none"
+                                    <a th:if="${event.canReject(enroll)}" href="#" class="text-decoration-none"
                                        th:href="@{'/study/' + ${study.path} + '/events/' + ${event.id} + '/enrollments/' + ${enroll.id} + '/reject'}">취소</a>
                                 </td>
                                 <td th:if="${study.isManager(#authentication.principal)}">
