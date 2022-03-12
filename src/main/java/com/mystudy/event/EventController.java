@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.mystudy.domain.Enrollment;
 import com.mystudy.domain.Event;
 import com.mystudy.domain.Member;
 import com.mystudy.domain.Study;
@@ -40,6 +41,7 @@ public class EventController {
 	private final EventValidator eventValidator;
 	private final EventRepository eventRepository;
 	private final StudyRepository studyRepository;
+	private final EnrollmentRepository enrollmentRepository;
 
 	@InitBinder("eventForm")
 	public void initBinder(WebDataBinder webDataBinder) {
@@ -70,10 +72,10 @@ public class EventController {
 	}
 
 	@GetMapping("/events/{id}")
-	public String getEvent(@CurrentMember Member member, @PathVariable String path, @PathVariable Long id,
+	public String getEvent(@CurrentMember Member member, @PathVariable String path, @PathVariable("id") Event event,
 			Model model) {
 		model.addAttribute(member);
-		model.addAttribute(eventRepository.findById(id).orElseThrow());
+		model.addAttribute(event);
 		model.addAttribute(studyRepository.findStudyWithManagersByPath(path));
 		return "event/view";
 	}
@@ -103,11 +105,9 @@ public class EventController {
 	}
 
 	@GetMapping("/events/{id}/edit")
-	public String updateEventForm(@CurrentMember Member member, @PathVariable String path, @PathVariable Long id,
-			Model model) {
-
+	public String updateEventForm(@CurrentMember Member member, @PathVariable String path,
+			@PathVariable("id") Event event, Model model) {
 		Study study = studyService.getStudyToUpdate(member, path);
-		Event event = eventRepository.findById(id).orElseThrow();
 		model.addAttribute(study);
 		model.addAttribute(member);
 		model.addAttribute(event);
@@ -116,11 +116,9 @@ public class EventController {
 	}
 
 	@PostMapping("/events/{id}/edit")
-	public String updateEventSubmit(@CurrentMember Member member, @PathVariable String path, @PathVariable Long id,
-			@Valid EventForm eventForm, Errors errors, Model model) {
-
+	public String updateEventSubmit(@CurrentMember Member member, @PathVariable String path,
+			@PathVariable("id") Event event, @Valid EventForm eventForm, Errors errors, Model model) {
 		Study study = studyService.getStudyToUpdate(member, path);
-		Event event = eventRepository.findById(id).orElseThrow();
 		eventForm.setEventType(event.getEventType());
 		eventValidator.validateUpdateForm(eventForm, event, errors);
 
@@ -136,24 +134,58 @@ public class EventController {
 	}
 
 	@DeleteMapping("/events/{id}")
-	public String cancelEvent(@CurrentMember Member member, @PathVariable String path, @PathVariable Long id) {
+	public String cancelEvent(@CurrentMember Member member, @PathVariable String path,
+			@PathVariable("id") Event event) {
 		Study study = studyService.getStudyToUpdateStatus(member, path);
-		eventService.deleteEvent(eventRepository.findById(id).orElseThrow());
+		eventService.deleteEvent(event);
 		return "redirect:/study/" + study.getEncodedPath() + "/events";
 	}
 
 	@PostMapping("/events/{id}/enroll")
-	public String newEnrollment(@CurrentMember Member member, @PathVariable String path, @PathVariable Long id) {
+	public String newEnrollment(@CurrentMember Member member, @PathVariable String path,
+			@PathVariable("id") Event event) {
 		Study study = studyService.getStudyToEnroll(path);
-		eventService.newEnrollment(eventRepository.findById(id).orElseThrow(), member);
-		return "redirect:/study/" + study.getEncodedPath() + "/events/" + id;
+		eventService.newEnrollment(event, member);
+		return "redirect:/study/" + study.getEncodedPath() + "/events/" + event.getId();
 	}
 
 	@PostMapping("/events/{id}/disenroll")
-	public String cancelEnrollment(@CurrentMember Member member, @PathVariable String path, @PathVariable Long id) {
+	public String cancelEnrollment(@CurrentMember Member member, @PathVariable String path,
+			@PathVariable("id") Event event) {
 		Study study = studyService.getStudyToEnroll(path);
-		eventService.cancelEnrollment(eventRepository.findById(id).orElseThrow(), member);
-		return "redirect:/study/" + study.getEncodedPath() + "/events/" + id;
+		eventService.cancelEnrollment(event, member);
+		return "redirect:/study/" + study.getEncodedPath() + "/events/" + event.getId();
 	}
 
+	@GetMapping("events/{eventId}/enrollments/{enrollmentId}/accept")
+	public String acceptEnrollment(@CurrentMember Member member, @PathVariable String path,
+			@PathVariable("eventId") Event event, @PathVariable("enrollmentId") Enrollment enrollment) {
+		Study study = studyService.getStudyToUpdate(member, path);
+		eventService.acceptEnrollment(event, enrollment);
+		return "redirect:/study/" + study.getEncodedPath() + "/events/" + event.getId();
+	}
+
+	@GetMapping("/events/{eventId}/enrollments/{enrollmentId}/reject")
+	public String rejectEnrollment(@CurrentMember Member member, @PathVariable String path,
+			@PathVariable("eventId") Event event, @PathVariable("enrollmentId") Enrollment enrollment) {
+		Study study = studyService.getStudyToUpdate(member, path);
+		eventService.rejectEnrollment(event, enrollment);
+		return "redirect:/study/" + study.getEncodedPath() + "/events/" + event.getId();
+	}
+
+	@GetMapping("/events/{eventId}/enrollments/{enrollmentId}/checkin")
+	public String checkInEnrollment(@CurrentMember Member member, @PathVariable String path,
+			@PathVariable("eventId") Event event, @PathVariable("enrollmentId") Enrollment enrollment) {
+		Study study = studyService.getStudyToUpdate(member, path);
+		eventService.checkInEnrollment(enrollment);
+		return "redirect:/study/" + study.getEncodedPath() + "/events/" + event.getId();
+	}
+
+	@GetMapping("/events/{eventId}/enrollments/{enrollmentId}/cancel-checkin")
+	public String cancelCheckInEnrollment(@CurrentMember Member member, @PathVariable String path,
+			@PathVariable("eventId") Event event, @PathVariable("enrollmentId") Enrollment enrollment) {
+		Study study = studyService.getStudyToUpdate(member, path);
+		eventService.cancelCheckInEnrollment(enrollment);
+		return "redirect:/study/" + study.getEncodedPath() + "/events/" + event.getId();
+	}
 }

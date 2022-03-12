@@ -50,10 +50,28 @@ public class EventService {
 		}
 	}
 
-	public void cancelEnrollment(Event event, Member account) {
-		Enrollment enrollment = enrollmentRepository.findByEventAndMember(event, account);
-		event.removeEnrollment(enrollment);
-		enrollmentRepository.delete(enrollment);
-		event.acceptNextWaitingEnrollment();
+	public void cancelEnrollment(Event event, Member member) {
+		Enrollment enrollment = enrollmentRepository.findByEventAndMember(event, member);
+		if (!enrollment.isAttended()) {
+			event.removeEnrollment(enrollment);
+			enrollmentRepository.delete(enrollment);
+			event.acceptNextWaitingEnrollment();
+		}
+	}
+
+	public void acceptEnrollment(Event event, Enrollment enrollment) {
+		event.accept(enrollment);
+	}
+
+	public void rejectEnrollment(Event event, Enrollment enrollment) {
+		event.reject(enrollment);
+	}
+
+	public void checkInEnrollment(Enrollment enrollment) {
+		enrollment.setAttended(true);
+	}
+
+	public void cancelCheckInEnrollment(Enrollment enrollment) {
+		enrollment.setAttended(false);
 	}
 }

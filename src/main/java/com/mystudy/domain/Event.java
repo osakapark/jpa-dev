@@ -16,6 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
 import com.mystudy.member.UserMember;
 
@@ -63,17 +64,18 @@ public class Event {
 	private Integer limitOfEnrollments;
 
 	@OneToMany(mappedBy = "event")
+	@OrderBy("enrolledDateTime")
 	private List<Enrollment> enrollments = new ArrayList<>();
 
 	@Enumerated(EnumType.STRING)
 	private EventType eventType;
 
 	public boolean isEnrollableFor(UserMember userAccount) {
-		return isNotClosed() && !isAlreadyEnrolled(userAccount);
+		return isNotClosed() && !isAttended(userAccount) && !isAlreadyEnrolled(userAccount);
 	}
 
 	public boolean isDisenrollableFor(UserMember userAccount) {
-		return isNotClosed() && isAlreadyEnrolled(userAccount);
+		return isNotClosed() && !isAttended(userAccount) && isAlreadyEnrolled(userAccount);
 	}
 
 	private boolean isNotClosed() {
@@ -124,8 +126,11 @@ public class Event {
 	}
 
 	public boolean canAccept(Enrollment enrollment) {
-		return this.eventType == EventType.CONFIRMATIVE && this.enrollments.contains(enrollment)
-				&& !enrollment.isAttended() && !enrollment.isAccepted();
+		return this.eventType == EventType.CONFIRMATIVE 
+				&& this.enrollments.contains(enrollment)
+				&& this.limitOfEnrollments > this.getNumberOfAcceptedEnrollments()
+				&& !enrollment.isAttended() 
+				&& !enrollment.isAccepted();
 	}
 
 	public boolean canReject(Enrollment enrollment) {
@@ -164,5 +169,18 @@ public class Event {
 
 		return null;
 	}
+	
+    public void accept(Enrollment enrollment) {
+        if (this.eventType == EventType.CONFIRMATIVE
+                && this.limitOfEnrollments > this.getNumberOfAcceptedEnrollments()) {
+            enrollment.setAccepted(true);
+        }
+    }
+
+    public void reject(Enrollment enrollment) {
+        if (this.eventType == EventType.CONFIRMATIVE) {
+            enrollment.setAccepted(false);
+        }
+    }
 
 }
