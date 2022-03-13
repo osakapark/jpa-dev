@@ -1,15 +1,18 @@
 package com.mystudy.modules.event;
 
-
 import com.mystudy.modules.member.WithMember;
 import com.mystudy.modules.study.StudyControllerTest;
-
+import com.mystudy.modules.study.StudyFactory;
+import com.mystudy.infra.MockMvcTest;
 import com.mystudy.modules.member.Member;
+import com.mystudy.modules.member.MemberFactory;
+import com.mystudy.modules.member.MemberRepository;
 import com.mystudy.modules.study.Study;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
@@ -19,19 +22,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class EventControllerTest extends StudyControllerTest {
-
-	@Autowired
-	EventService eventService;
-	@Autowired
-	EnrollmentRepository enrollmentRepository;
+@MockMvcTest
+class EventControllerTest {
+    @Autowired MockMvc mockMvc;
+    @Autowired StudyFactory studyFactory;
+    @Autowired MemberFactory memberFactory;
+    @Autowired EventService eventService;
+    @Autowired EnrollmentRepository enrollmentRepository;
+    @Autowired MemberRepository memberRepository;
 
 	@Test
 	@DisplayName("선착순 모임에 참가 신청 - 자동 수락")
 	@WithMember("keesun")
 	void newEnrollment_to_FCFS_event_accepted() throws Exception {
-		Member whiteship = createMember("whiteship");
-		Study study = createStudy("test-study", whiteship);
+		Member whiteship = memberFactory.createMember("whiteship");
+		Study study = studyFactory.createStudy("test-study", whiteship);
 		Event event = createEvent("test-event", EventType.FCFS, 2, study, whiteship);
 
 		mockMvc.perform(post("/study/" + study.getPath() + "/events/" + event.getId() + "/enroll").with(csrf()))
@@ -46,12 +51,12 @@ class EventControllerTest extends StudyControllerTest {
 	@DisplayName("선착순 모임에 참가 신청 - 대기중 (이미 인원이 꽉차서)")
 	@WithMember("keesun")
 	void newEnrollment_to_FCFS_event_not_accepted() throws Exception {
-		Member whiteship = createMember("whiteship");
-		Study study = createStudy("test-study", whiteship);
+		Member whiteship = memberFactory.createMember("whiteship");
+		Study study = studyFactory.createStudy("test-study", whiteship);
 		Event event = createEvent("test-event", EventType.FCFS, 2, study, whiteship);
 
-		Member may = createMember("may");
-		Member june = createMember("june");
+		Member may = memberFactory.createMember("may");
+		Member june = memberFactory.createMember("june");
 		eventService.newEnrollment(event, may);
 		eventService.newEnrollment(event, june);
 
@@ -68,9 +73,9 @@ class EventControllerTest extends StudyControllerTest {
 	@WithMember("keesun")
 	void accepted_account_cancelEnrollment_to_FCFS_event_not_accepted() throws Exception {
 		Member keesun = memberRepository.findByNickname("keesun");
-		Member whiteship = createMember("whiteship");
-		Member may = createMember("may");
-		Study study = createStudy("test-study", whiteship);
+		Member whiteship = memberFactory.createMember("whiteship");
+		Member may = memberFactory.createMember("may");
+		Study study = studyFactory.createStudy("test-study", whiteship);
 		Event event = createEvent("test-event", EventType.FCFS, 2, study, whiteship);
 
 		eventService.newEnrollment(event, may);
@@ -95,9 +100,9 @@ class EventControllerTest extends StudyControllerTest {
 	@WithMember("keesun")
 	void not_accepterd_account_cancelEnrollment_to_FCFS_event_not_accepted() throws Exception {
 		Member keesun = memberRepository.findByNickname("keesun");
-		Member whiteship = createMember("whiteship");
-		Member may = createMember("may");
-		Study study = createStudy("test-study", whiteship);
+		Member whiteship = memberFactory.createMember("whiteship");
+		Member may = memberFactory.createMember("may");
+		Study study = studyFactory.createStudy("test-study", whiteship);
 		Event event = createEvent("test-event", EventType.FCFS, 2, study, whiteship);
 
 		eventService.newEnrollment(event, may);
@@ -129,8 +134,8 @@ class EventControllerTest extends StudyControllerTest {
 	@DisplayName("관리자 확인 모임에 참가 신청 - 대기중")
 	@WithMember("keesun")
 	void newEnrollment_to_CONFIMATIVE_event_not_accepted() throws Exception {
-		Member whiteship = createMember("whiteship");
-		Study study = createStudy("test-study", whiteship);
+		Member whiteship = memberFactory.createMember("whiteship");
+		Study study = studyFactory.createStudy("test-study", whiteship);
 		Event event = createEvent("test-event", EventType.CONFIRMATIVE, 2, study, whiteship);
 
 		mockMvc.perform(post("/study/" + study.getPath() + "/events/" + event.getId() + "/enroll").with(csrf()))

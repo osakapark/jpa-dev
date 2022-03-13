@@ -20,18 +20,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mystudy.modules.member.Member;
-import com.mystudy.modules.member.MemberRepository;
-import com.mystudy.modules.member.MemberService;
-import com.mystudy.modules.member.SettingsController;
+import com.mystudy.infra.MockMvcTest;
 import com.mystudy.modules.tag.Tag;
 import com.mystudy.modules.tag.TagForm;
 import com.mystudy.modules.tag.TagRepository;
@@ -39,9 +32,7 @@ import com.mystudy.modules.zone.Zone;
 import com.mystudy.modules.zone.ZoneForm;
 import com.mystudy.modules.zone.ZoneRepository;
 
-@Transactional
-@SpringBootTest
-@AutoConfigureMockMvc
+@MockMvcTest
 public class SettingsControllerTest {
 	@Autowired
 	MockMvc mockMvc;

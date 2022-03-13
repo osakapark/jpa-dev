@@ -20,6 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.mystudy.infra.MockMvcTest;
 import com.mystudy.infra.mail.EmailMessage;
 import com.mystudy.infra.mail.EmailService;
 import com.mystudy.modules.member.Member;
@@ -28,9 +29,7 @@ import com.mystudy.modules.member.MemberRepository;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
+@MockMvcTest
 public class MemberControllerTest {
 	@Autowired
 	private MockMvc mockMvc;

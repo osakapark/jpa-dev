@@ -16,12 +16,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.mystudy.infra.MockMvcTest;
 import com.mystudy.modules.member.MemberRepository;
 import com.mystudy.modules.member.MemberService;
 import com.mystudy.modules.member.form.SignUpForm;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@MockMvcTest
 public class MainControllerTest {
 	@Autowired MemberService memberService;
 	@Autowired MemberRepository memberRepository;

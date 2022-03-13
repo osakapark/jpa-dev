@@ -21,7 +21,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.mystudy.modules.member.WithMember;
+import com.mystudy.infra.MockMvcTest;
 import com.mystudy.modules.member.Member;
+import com.mystudy.modules.member.MemberFactory;
 import com.mystudy.modules.member.MemberRepository;
 import com.mystudy.modules.study.Study;
 import com.mystudy.modules.study.StudyRepository;
@@ -29,19 +31,14 @@ import com.mystudy.modules.study.StudyService;
 
 import lombok.RequiredArgsConstructor;
 
-@Transactional
-@SpringBootTest
-@AutoConfigureMockMvc
-@RequiredArgsConstructor
+@MockMvcTest
 public class StudyControllerTest {
-	@Autowired
-	protected MockMvc mockMvc;
-	@Autowired
-	protected StudyService studyService;
-	@Autowired
-	protected StudyRepository studyRepository;
-	@Autowired
-	protected MemberRepository memberRepository;
+    @Autowired MockMvc mockMvc;
+    @Autowired StudyService studyService;
+    @Autowired StudyRepository studyRepository;
+    @Autowired MemberRepository memberRepository;
+    @Autowired MemberFactory memberFactory;
+    @Autowired StudyFactory studyFactory;
 
 	@AfterEach
 	void afterEach() {
@@ -106,8 +103,8 @@ public class StudyControllerTest {
 	@WithMember("keesun")
 	@DisplayName("study 가입")
 	void joinStudy() throws Exception {
-		Member whiteship = createMember("a1");
-		Study study = createStudy("test-study", whiteship);
+		Member whiteship = memberFactory.createMember("a1");
+		Study study = studyFactory.createStudy("test-study", whiteship);
 
 		mockMvc.perform(get("/study/" + study.getPath() + "/join")).andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/study/" + study.getPath() + "/members"));
@@ -121,8 +118,8 @@ public class StudyControllerTest {
 	@WithMember("keesun")
 	@DisplayName("스터디 탈퇴")
 	void leaveStudy() throws Exception {
-		Member whiteship = createMember("whiteship");
-		Study study = createStudy("test-study", whiteship);
+		Member whiteship = memberFactory.createMember("whiteship");
+		Study study = studyFactory.createStudy("test-study", whiteship);
 
 		Member keesun = memberRepository.findByNickname("keesun");
 		studyService.addMember(study, keesun);
@@ -133,19 +130,6 @@ public class StudyControllerTest {
 		assertFalse(study.getMembers().contains(keesun));
 	}
 
-	protected Study createStudy(String path, Member member) {
-		Study study = new Study();
-		study.setPath(path);
-		studyService.createNewStudy(study, member);
-		return study;
-	}
 
-	protected Member createMember(String nickname) {
-		Member mem1 = new Member();
-		mem1.setNickname(nickname);
-		mem1.setEmail(nickname + "@gmail.com");
-		memberRepository.save(mem1);
-		return mem1;
-	}
 
 }
